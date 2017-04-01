@@ -24,7 +24,7 @@ export const EDITOR_STYL = {
 }
 
 export const POST_STYL = {
-  background: '#EDE7F6',
+  border: '1px solid #FAFAFA',
   padding: '.5em',
   margin: '.5em',
   color: '#757575'

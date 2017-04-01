@@ -28,5 +28,5 @@ PostEditor.propTypes = {
   handleOnChange: PropTypes.func.isRequired,
   addPost: PropTypes.func.isRequired
 }
-// Proptypes
+
 export default PostEditor
