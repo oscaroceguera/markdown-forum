@@ -15,26 +15,31 @@ import {
 class App extends Component {
   static propTypes = {
     newPost: PropTypes.string.isRequired,
-    addPost: PropTypes.func.isRequired,
+    addPostFanout: PropTypes.func.isRequired,
     listeningPost: PropTypes.func.isRequired,
-    posts: PropTypes.array.isRequired
+    postsRequest: PropTypes.func.isRequired
   }
+
+  componentWillMount () {
+    this.props.postsRequest()
+  }
+
   addPost = () => {
-    const { newPost, addPost } = this.props
-    if (newPost === '') { return }
-    addPost(newPost)
+    this.props.addPostFanout()
+    this.props.postsRequest()
   }
+
   handleOnChange = (ev) => {
     this.props.listeningPost(ev.target.value)
   }
+  
   render () {
     const {posts, newPost} = this.props
-    const postsReverse = _.reverse(posts)
     return (
       <Paper style={PAPER_STYL} zDepth={2}>
         <h3 style={H3_STYL}>{'Chat!'}</h3>
         <div style={MSG_STYL}>
-            { postsReverse.map((item, key) => (<Post key={key} item={item} />)) }
+          { _.map(posts, (item, key) => (<Post key={key} item={item} />)) }
         </div>
         <div style={EDITOR_STYL}>
           <PostEditor addPost={this.addPost} newPost={newPost} handleOnChange={this.handleOnChange}/>

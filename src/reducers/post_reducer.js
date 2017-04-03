@@ -1,25 +1,57 @@
-import { fromJS, List } from 'immutable'
+import { fromJS, List, Map } from 'immutable'
+import { saveToPosts, fetchPost } from 'helpers/api'
+import { ref } from 'config'
 
 // Actions
 export const LISTENING_POST = 'src/reducers/post/LISTENING_POST'
 export const ADD_POST = 'src/reducers/post/ADD_POST'
-const POSTS_REQUEST = 'src/reducers/post/POSTS_REQUEST'
 const POSTS_REQUEST_SUCCESS = 'src/reducers/post/POSTS_REQUEST_SUCCESS'
 const POSTS_REQUEST_FAIL = 'src/reducers/post/POSTS_REQUEST_FAIL'
 
 // Actions Creators
 export const postActions = {
+
   listeningPost: (newPost) => ({ type: LISTENING_POST, newPost }),
-  addPost: (post) => ({ type: ADD_POST, post }),
-  postsRequest: () => ({ type: POSTS_REQUEST }),
-  postsRequestSuccess: (posts) => ({ type: POSTS_REQUEST_SUCCESS, posts}),
-  postsRequestFail: (fail) => ({ type: POSTS_REQUEST_FAIL, fail })
+
+  addPostFanout: () => {
+    return (dispatch, getState) => {
+      const post = getState().postsReducer.toJS().newPost
+
+      if (post === '') return
+
+      saveToPosts(post).then((postSaved) => {
+        dispatch({
+          type: ADD_POST,
+          postSaved: postSaved
+        })
+      }).catch((error) => {
+        console.warn('Error', error)
+      })
+    }
+  },
+
+  postsRequest: () => {
+    return (dispatch) => {
+      return ref.child('posts').once('value', (snap) => {
+        dispatch({
+          type: POSTS_REQUEST_SUCCESS,
+          posts: snap.val()
+        })
+      })
+      .catch((err) => {
+        dispatch({
+          type: POSTS_REQUEST_FAIL,
+          err
+        })
+      })
+    }
+  },
 }
 
 const initalState = fromJS({
-  posts: [],
   postError: null,
-  newPost: ''
+  newPost: '',
+  posts: []
 })
 
 function postReducer (state = initalState, action) {
@@ -27,11 +59,16 @@ function postReducer (state = initalState, action) {
     case LISTENING_POST:
       return state.set('newPost', action.newPost)
     case ADD_POST:
-      return state.merge({
-        posts: state.get('posts').unshift(action.post),
-        newPost: '',
-        postError: null
-      })
+      return state
+        .setIn(['postsCurrent', [action.postSaved.postId]], action.postSaved)
+        .merge({
+          newPost: '',
+          postError: null
+        })
+    case POSTS_REQUEST_SUCCESS:
+      return state.set('posts', action.posts)
+    case POSTS_REQUEST_FAIL:
+      return state.set('postError', action.err)
     default:
       return state
   }

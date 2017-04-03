@@ -11,8 +11,6 @@ injectTapEventPlugin();
 
 import './styles/index.css'
 
-// const createStoreWithMddleware = applyMiddleware(thunk)(createStore)
-// const store = createStoreWithMddleware(reducers)
 const store = createStore(
   combineReducers({ ...reducers}),
   compose(
