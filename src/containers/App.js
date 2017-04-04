@@ -15,31 +15,33 @@ import {
 class App extends Component {
   static propTypes = {
     newPost: PropTypes.string.isRequired,
-    addPostFanout: PropTypes.func.isRequired,
     listeningPost: PropTypes.func.isRequired,
-    postsRequest: PropTypes.func.isRequired
-  }
-
-  componentWillMount () {
-    this.props.postsRequest()
+    addPostRequest: PropTypes.func.isRequired
   }
 
   addPost = () => {
-    this.props.addPostFanout()
-    this.props.postsRequest()
+    if (this.props.newPost == '' ) {
+      return
+    }
+    this.props.addPostRequest()
   }
 
   handleOnChange = (ev) => {
     this.props.listeningPost(ev.target.value)
   }
-  
+
+  _updatePost = (e, id) => {
+    const postInfo = `El ID de su post es ${id}, opción de actualizar proximamente`
+    alert(postInfo)
+  }
+
   render () {
     const {posts, newPost} = this.props
     return (
       <Paper style={PAPER_STYL} zDepth={2}>
         <h3 style={H3_STYL}>{'Chat!'}</h3>
         <div style={MSG_STYL}>
-          { _.map(posts, (item, key) => (<Post key={key} item={item} />)) }
+          { _.map(posts, (item, key) => (<Post key={key} item={item} onClickUp={(e, id) => this._updatePost(e, item.postId)}/>)) }
         </div>
         <div style={EDITOR_STYL}>
           <PostEditor addPost={this.addPost} newPost={newPost} handleOnChange={this.handleOnChange}/>
